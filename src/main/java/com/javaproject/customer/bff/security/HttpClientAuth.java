@@ -1,19 +1,30 @@
 package com.javaproject.customer.bff.security;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.http.client.reactive.ClientHttpRequest;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.BodyInserter;
-import com.javaproject.customer.bff.security.job.JwtTokenRefresh;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import com.javaproject.customer.bff.security.service.JwtToken;
+
+import org.springframework.http.client.reactive.ClientHttpRequest;
 
 @Component
 public class HttpClientAuth {
 
-	private final WebClient webClient;
-	private final JwtTokenRefresh tokenService;
+	@Value("${http.client-id}")
+	private String clientId;
+
+	@Value("${http.secret-id}")
+	private String secretId;
 	
-	public HttpClientAuth(WebClient webClient, JwtTokenRefresh tokenService) {
+	private final WebClient webClient;
+	private final JwtToken tokenService;
+	
+	public HttpClientAuth(WebClient webClient, JwtToken tokenService) {
 		this.webClient = webClient;
 		this.tokenService = tokenService;
 	}
@@ -43,4 +54,20 @@ public class HttpClientAuth {
 				.body(body)
 				.retrieve();
 	}
+
+	
+	public WebClient.ResponseSpec delete(String uri){
+		return webClient.delete()
+				.uri(uri)
+				.accept(MediaType.APPLICATION_JSON)
+				.headers(httpHeaders -> httpHeaders.setBearerAuth(tokenService.getToken()))
+				.retrieve();
+	}
+	
+	public HttpEntity<Object> getRequestHeaders() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", "Bearer " + tokenService.getJwtToken(clientId, secretId));
+		return new HttpEntity<>(headers);
+	}
+
 }

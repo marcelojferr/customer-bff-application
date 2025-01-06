@@ -8,7 +8,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import com.javaproject.customer.bff.dto.CustomerDTO;
-import com.javaproject.customer.bff.exception.UserException;
+import com.javaproject.customer.bff.exception.CustomerException;
 import com.javaproject.customer.bff.security.HttpClientAuth;
 
 import reactor.core.publisher.Mono;
@@ -30,7 +30,7 @@ public class CustomerService {
 		log.info("init: getCustomers");
 		log.info("request: {}", customerUrl);
 		return httpClient.get(customerUrl)
-				.onStatus(HttpStatusCode:: isError, response -> Mono.error(new UserException("Error getting customers")))
+				.onStatus(HttpStatusCode:: isError, response -> Mono.error(new CustomerException("Error getting customers")))
 				.bodyToMono(new ParameterizedTypeReference<>() {
 				});
 	}
